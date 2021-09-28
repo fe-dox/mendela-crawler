@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crawler</title>
+</head>
+<body>
+<label for="range">Depth: <span id="depth-display">3</span></label><input id="depth" type="range" name="range"
+                                                                          id="range" min="1" max="5" value="3">
+<label>
+    URL:
+    <input id="url" type="text" name="url">
+</label>
+<button id="startButton">Go!</button>
+<div id="results"></div>
+<script>
+    const depthDisplay = document.getElementById('depth-display')
+    const depth = document.getElementById('depth')
+    const goButton = document.getElementById('startButton')
+    const url = document.getElementById('url')
+    const resultsDisplay = document.getElementById("results")
+    depth.addEventListener('change', () => {
+        depthDisplay.innerHTML = depth.value;
+    })
+    goButton.addEventListener('click', () => {
+        resultsDisplay.innerHTML = "";
+        (async () => {
+            const rawResponse = await fetch('http://localhost:3000/crawl', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({url: url.value, depth: Number(depth.value)})
+            });
+            const content = await rawResponse.json();
+            const results = content.data;
+            let dl = document.createElement('dl');
+            for (let result of results) {
+                let dt = document.createElement('dt');
+                dt.innerText = result.siteName
+                let dd = document.createElement('dd');
+                if (result.emails != null) {
+                    dd.innerHTML = result.emails.join("<br>")
+                } else {
+                    dd.innerText = "none";
+                }
+                dl.append(dt)
+                dl.append(dd)
+            }
+            resultsDisplay.append(dl)
+        })();
+    })
+
+</script>
+
+</body>
+</html>
